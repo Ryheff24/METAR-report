@@ -13,31 +13,32 @@ var config = {
   url: 'https://www.aviationweather.gov/adds/dataserver_current/current/metars.cache.csv',
   headers: { }
 };
-
-axios(config)
-.then(function (response) {
-    const raw = response.data;
-    const lineSplit = raw.split("\n");;
-    for(var i = 0; i < 5; i++){
-        lineSplit.splice(0, 1);
-    }
-    const array = []
-    var metars = lineSplit.join('\n');
-    const json = csvJSON(metars);
-    const map = json.map(e => e.raw_text)
-    for(var i = 0; i < map.length; i++){
-        let identifier = map[i].slice(0, 4)
-        const metarReport = map[i]//.substring(5)
-        const key = {
-            [identifier] : metarReport,
+setTimeout(() => {
+    axios(config)
+    .then(function (response) {
+        const raw = response.data;
+        const lineSplit = raw.split("\n");;
+        for(var i = 0; i < 5; i++){
+            lineSplit.splice(0, 1);
         }
-        redis.pushToRedis(identifier, metarReport)
+        const array = []
+        var metars = lineSplit.join('\n');
+        const json = csvJSON(metars);
+        const map = json.map(e => e.raw_text)
+        for(var i = 0; i < map.length; i++){
+            let identifier = map[i].slice(0, 4)
+            const metarReport = map[i]//.substring(5)
+            const key = {
+                [identifier] : metarReport,
+            }
+            redis.pushToRedis(identifier, metarReport)
 
-    }
-})
-.catch(function (error) {
-  console.log(error);
+        }
+    })
+    .catch(function (error) {
+    console.log(error);
 });
+}, 600000);
 function csvJSON(csv){
 
     var lines=csv.split("\n");
