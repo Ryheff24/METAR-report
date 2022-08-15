@@ -2,10 +2,10 @@ const redis = require('./redis')
 async function run(){
     const express = require('express');
     const app = express();
-    const port = 3000;
+    const port = 6969;
     const redis = require('./redis');
     
-    app.get('/metar', async (req, res) => {
+    app.get('/', async (req, res) => {
         if(!req.query.airport){
             res.send('No Airport Code Provided');
             return;
