@@ -1,19 +1,17 @@
 var axios = require('axios');
 const path = require("path");
 const fs = require("fs");
-const cacheFile = path.resolve(__dirname, "redis.json");
-let cache = JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
 const redis = require('./redis')
 const api = require('./api')
 api.run();
-runMain();
 
 var config = {
   method: 'get',
   url: 'https://www.aviationweather.gov/adds/dataserver_current/current/metars.cache.csv',
   headers: { }
 };
-function runMain() {
+main(config)
+function main(config){
     axios(config)
     .then(function (response) {
         const raw = response.data;
@@ -40,6 +38,7 @@ function runMain() {
     });
 }
 setInterval(() => {
+    console.log('refreshing data')
     axios(config)
     .then(function (response) {
         const raw = response.data;
@@ -64,7 +63,7 @@ setInterval(() => {
     .catch(function (error) {
         console.log(error);
     });
-}, 600000);
+}, 300000);
 
 function csvJSON(csv){
 
