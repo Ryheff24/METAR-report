@@ -2,7 +2,8 @@
     "apps": [
         {
             "name": "Metar-API",
-            "script": "index.js"
+            "script": "index.js",
+            "watch": true
         }
     ]
 }
