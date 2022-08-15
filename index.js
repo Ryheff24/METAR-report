@@ -6,13 +6,39 @@ let cache = JSON.parse(fs.readFileSync(cacheFile, "utf-8"));
 const redis = require('./redis')
 const api = require('./api')
 api.run();
-
+runMain();
 
 var config = {
   method: 'get',
   url: 'https://www.aviationweather.gov/adds/dataserver_current/current/metars.cache.csv',
   headers: { }
 };
+function runMain() {
+    axios(config)
+    .then(function (response) {
+        const raw = response.data;
+        const lineSplit = raw.split("\n");;
+        for(var i = 0; i < 5; i++){
+            lineSplit.splice(0, 1);
+        }
+        const array = []
+        var metars = lineSplit.join('\n');
+        const json = csvJSON(metars);
+        const map = json.map(e => e.raw_text)
+        for(var i = 0; i < map.length; i++){
+            let identifier = map[i].slice(0, 4)
+            const metarReport = map[i]//.substring(5)
+            const key = {
+                [identifier] : metarReport,
+            }
+            redis.pushToRedis(identifier, metarReport)
+
+        }
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+}
 setInterval(() => {
     axios(config)
     .then(function (response) {
@@ -36,9 +62,10 @@ setInterval(() => {
         }
     })
     .catch(function (error) {
-    console.log(error);
-});
+        console.log(error);
+    });
 }, 600000);
+
 function csvJSON(csv){
 
     var lines=csv.split("\n");
